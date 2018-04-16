@@ -38,7 +38,7 @@ export const Spotify = {
     }
 
     return fetch(`https://api.spotify.com/v1/search?type=track&q=${term}`,
-          { headers: header }
+          { headers: {Authorization: `Bearer ${accessToken}`} }
         ).then(response => response.json()).then(jsonResponse => {
           if(jsonResponse.tracks) {
             console.log('Search Sucessful');
