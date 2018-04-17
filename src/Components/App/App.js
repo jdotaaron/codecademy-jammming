@@ -22,22 +22,48 @@ class App extends Component {
     this.updatePlaylistName = this.updatePlaylistName.bind(this);
     this.savePlaylist = this.savePlaylist.bind(this);
     this.search = this.search.bind(this);
+
+    this.searchResultLocation = [];
   }
 
   addTrack(track){
     console.log(`Attempting to Add Track ${track.id} to playlist.`);
     let currentPlaylist = this.state.playlistTracks;
+    let currentSearchResults = this.state.searchResults;
 
     if(!currentPlaylist.some(trackID => trackID.id === track.id)){
       console.log(`Track ${track.id} is not in playlist. Adding to Playlist`);
       currentPlaylist.push(track);
       this.setState({playlistTracks: currentPlaylist});
+
+      // Get index of current track being added
+      let searchIndex = currentSearchResults.indexOf(track);
+      // save location in search results of added track
+      this.searchResultLocation.push([searchIndex, track]);
+      console.log(this.searchResultLocation);
+      // Remove Track from array
+      currentSearchResults.splice(searchIndex, 1);
+      // set new state of SearchResults
+      this.setState({ searchResults: currentSearchResults});
     } else console.log('Song is already in playlist');
   }
 
   removeTrack(track){
     console.log(`Removing ${track.id} from playlist.`);
     let currentPlaylist = this.state.playlistTracks;
+    let currentSearchResults = this.state.searchResults;
+
+      if(this.searchResultLocation.length > 0){
+        let originalSearchLocation;
+        //locate saved track for its original index
+        this.searchResultLocation.forEach(searchTrack => {
+          if(searchTrack[1].id === track.id){
+            originalSearchLocation = searchTrack[0];
+          }
+        })
+        // reinsert track to proper location in searchResults
+        currentSearchResults.splice(originalSearchLocation, 0, track);
+      }
 
     this.setState({playlistTracks: currentPlaylist.filter(tracks => tracks.id !== track.id)});
   }
@@ -53,7 +79,30 @@ class App extends Component {
   }
 
   search(term){
-    Spotify.search(term).then(result => this.setState({searchResults: result}));
+    let currentPlaylist = this.state.playlistTracks;
+    let modifiedSearch = [];
+    // reset searchResultLocation
+    this.searchResultLocation = [];
+    console.log(this.searchResultLocation);
+    // if no songs in playlist, allow search to behave as normal
+    if(currentPlaylist.length === 0){
+      Spotify.search(term).then(result => this.setState({searchResults: result}));
+    } else {
+      Spotify.search(term).then(result =>
+        {
+          // For each track in the results...
+          result.forEach(track => {
+            // check if the ID DOES NOT match any of the IDs in currentPlaylist
+            if(!currentPlaylist.some(playlistTrack => playlistTrack.id === track.id)){
+              // push to modified searchResults
+              modifiedSearch.push(track);
+            }
+          });
+          this.setState({searchResults : modifiedSearch});
+        });
+
+    }
+
   }
 
   render() {

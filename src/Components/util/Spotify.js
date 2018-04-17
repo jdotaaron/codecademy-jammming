@@ -4,7 +4,7 @@ let userID = '';
 
 const clientId = '19f2c30b492c4c6cac6c958566125c2a';
 const redirectUri = 'http://localhost:3000/';
-const header = {Authorization: `Bearer ${accessToken}`};
+//const header = {Authorization: `Bearer ${accessToken}`};
 
 export const Spotify = {
   getAccessToken(){
