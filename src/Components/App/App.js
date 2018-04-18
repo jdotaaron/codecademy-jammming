@@ -23,7 +23,6 @@ class App extends Component {
     this.savePlaylist = this.savePlaylist.bind(this);
     this.search = this.search.bind(this);
 
-    this.searchResultLocation = [];
   }
 
   addTrack(track){
@@ -36,13 +35,8 @@ class App extends Component {
       currentPlaylist.push(track);
       this.setState({playlistTracks: currentPlaylist});
 
-      // Get index of current track being added
-      let searchIndex = currentSearchResults.indexOf(track);
-      // save location in search results of added track
-      this.searchResultLocation.push([searchIndex, track]);
-      console.log(this.searchResultLocation);
-      // Remove Track from array
-      currentSearchResults.splice(searchIndex, 1);
+      // Remove Track from search results
+      currentSearchResults.splice(currentSearchResults.indexOf(track), 1);
       // set new state of SearchResults
       this.setState({ searchResults: currentSearchResults});
     } else console.log('Song is already in playlist');
@@ -51,19 +45,6 @@ class App extends Component {
   removeTrack(track){
     console.log(`Removing ${track.id} from playlist.`);
     let currentPlaylist = this.state.playlistTracks;
-    let currentSearchResults = this.state.searchResults;
-
-      if(this.searchResultLocation.length > 0){
-        let originalSearchLocation;
-        //locate saved track for its original index
-        this.searchResultLocation.forEach(searchTrack => {
-          if(searchTrack[1].id === track.id){
-            originalSearchLocation = searchTrack[0];
-          }
-        })
-        // reinsert track to proper location in searchResults
-        currentSearchResults.splice(originalSearchLocation, 0, track);
-      }
 
     this.setState({playlistTracks: currentPlaylist.filter(tracks => tracks.id !== track.id)});
   }
@@ -81,9 +62,7 @@ class App extends Component {
   search(term){
     let currentPlaylist = this.state.playlistTracks;
     let modifiedSearch = [];
-    // reset searchResultLocation
-    this.searchResultLocation = [];
-    console.log(this.searchResultLocation);
+
     // if no songs in playlist, allow search to behave as normal
     if(currentPlaylist.length === 0){
       Spotify.search(term).then(result => this.setState({searchResults: result}));
@@ -100,9 +79,7 @@ class App extends Component {
           });
           this.setState({searchResults : modifiedSearch});
         });
-
     }
-
   }
 
   render() {
